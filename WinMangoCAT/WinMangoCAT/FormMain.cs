@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace WinMangoCAT
 {
-    public partial class Form1 : Form
+    public partial class FormMain : Form
     {
         // バックグラウンド処理
         BackgroundWorker worker;
@@ -33,7 +33,7 @@ namespace WinMangoCAT
         TextBox[] tb_stick = new TextBox[4];
 
         // 初期化する
-        public Form1()
+        public FormMain()
         {
             InitializeComponent();
 

@@ -1,6 +1,6 @@
 ﻿namespace WinMangoCAT
 {
-    partial class Form1
+    partial class FormMain
     {
         /// <summary>
         /// 必要なデザイナー変数です。
