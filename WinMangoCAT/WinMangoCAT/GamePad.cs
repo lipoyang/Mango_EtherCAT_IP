@@ -9,15 +9,19 @@ using System.Windows.Forms; // MessageBox
 
 namespace WinMangoCAT
 {
-    // アナログスティック入力値
-    class AnalogInput
+    // ゲームパッド入力値
+    class GamepadInput
     {
         public int[] val = new int[4];
+        public bool startButton = false;
     }
 
     // ゲームパッド入力
     class GamePad
     {
+        // スタートボタンの番号 (ゲームパッド製品によって異なる)
+        const int START_BUTTON = 12;
+
         // DirectInput
         DirectInput dinput = new DirectInput();
         // ゲームパッド
@@ -26,6 +30,8 @@ namespace WinMangoCAT
         Guid joystickGuid = Guid.Empty;
         // ゲームパッドが利用可能か
         bool available = false;
+        // スタートボタン前回値
+        bool startButtonOld = false;
 
         // 初期化する
         public void Init()
@@ -96,9 +102,9 @@ namespace WinMangoCAT
 
         // ゲームパッド入力処理
         // return: 押されたボタン
-        public AnalogInput Get()
+        public GamepadInput Get()
         {
-            AnalogInput ret = new AnalogInput();
+            GamepadInput ret = new GamepadInput();
 
             if (!available) return ret;
 
@@ -121,11 +127,17 @@ namespace WinMangoCAT
             var jState = joystick.GetCurrentState();
             // 取得できない場合、処理終了
             if (jState == null) { return ret; }
-
+            
+            // アナログスティックの値
             ret.val[0] = jState.X;
             ret.val[1] = jState.Y;
             ret.val[2] = jState.Z;
             ret.val[3] = jState.RotationZ;
+            
+            // スタートボタンの立下り
+            bool button = jState.Buttons[START_BUTTON - 1];
+            ret.startButton = (!startButtonOld && button) ? true : false;
+            startButtonOld = button;
 
             return ret;
         }

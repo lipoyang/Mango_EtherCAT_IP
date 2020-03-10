@@ -92,13 +92,13 @@ namespace WinMangoCAT
             while (true)
             {
                 // ゲームパッド入力
-                AnalogInput analog;
+                GamepadInput padInput;
                 lock (lockObj)
                 {
-                    analog = gamePad.Get();
+                    padInput = gamePad.Get();
                 }
                 // 表示更新
-                worker.ReportProgress(0, analog);
+                worker.ReportProgress(0, padInput);
 
                 // UDP通信を開いている場合
                 lock (lockObj)
@@ -124,8 +124,8 @@ namespace WinMangoCAT
                             data[1] = (byte)'C';
                             for (int i = 0; i < 4; i++)
                             {
-                                data[2 + 2 * i] = (byte)(analog.val[i] >> 8);
-                                data[3 + 2 * i] = (byte)(analog.val[i] & 0xFF);
+                                data[2 + 2 * i] = (byte)(padInput.val[i] >> 8);
+                                data[3 + 2 * i] = (byte)(padInput.val[i] & 0xFF);
                             }
                             data[10] = (byte)'$';
                             udpComm.Send(data);
@@ -137,15 +137,18 @@ namespace WinMangoCAT
         }
 
         // 表示更新
-        // e.UserState: アナログ入力値
+        // e.UserState: ゲームパッド入力値
         private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            AnalogInput analog = (AnalogInput)e.UserState;
+            GamepadInput padInput = (GamepadInput)e.UserState;
 
+            // アナログスティック
             for(int i = 0; i < 4; i++)
             {
-                tb_stick[i].Text = analog.val[i].ToString();
+                tb_stick[i].Text = padInput.val[i].ToString();
             }
+            // スタートボタン
+            if (padInput.startButton) buttonControl_Click(null, null);
         }
 
         // 接続
