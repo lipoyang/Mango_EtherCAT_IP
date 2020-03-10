@@ -32,6 +32,25 @@ namespace WinMangoCAT
         TextBox[] tb_servo = new TextBox[4];
         TextBox[] tb_stick = new TextBox[4];
 
+        // 表示拡大用
+        List<Label> labels;
+        List<Button> buttons;
+        List<TextBox> textboxes;
+        int[] textBoxWidth;
+        const int FONTSIZE = 20;
+
+        // 特定種類のコントロールを列挙 (表示拡大用)
+        public static List<T> GetAllControls<T>(Control top) where T : Control
+        {
+            List<T> buf = new List<T>();
+            foreach (Control ctrl in top.Controls)
+            {
+                if (ctrl is T) buf.Add((T)ctrl);
+                buf.AddRange(GetAllControls<T>(ctrl));
+            }
+            return buf;
+        }
+
         // 初期化する
         public FormMain()
         {
@@ -59,6 +78,16 @@ namespace WinMangoCAT
             tb_stick[1] = textPad1;
             tb_stick[2] = textPad2;
             tb_stick[3] = textPad3;
+
+            // 表示拡大用
+            labels = GetAllControls<Label>(this);
+            buttons = GetAllControls<Button>(this);
+            textboxes = GetAllControls<TextBox>(this);
+            textBoxWidth = new int[textboxes.Count];
+            for (int i = 0; i < textboxes.Count; i++)
+            {
+                textBoxWidth[i] = textboxes[i].Width;
+            }
 
             // ゲームパッドの初期化
             gamePad = new GamePad();
@@ -278,6 +307,33 @@ namespace WinMangoCAT
                 // 不明なコマンド
                 default:
                     break;
+            }
+        }
+
+        // フォームサイズ変化時
+        private void FormMain_Resize(object sender, EventArgs e)
+        {
+            // 表示倍率
+            double factor;
+            if(this.WindowState == FormWindowState.Maximized){
+                factor = (double)this.Size.Width / 820.0;
+            }else{
+                factor = 1.0;
+            }
+            // フォント
+            Font font = new Font(labels[0].Font.OriginalFontName, (int)(FONTSIZE * factor));
+            // ラベル
+            for (int i = 0; i < labels.Count; i++){
+                labels[i].Font = font;
+            }
+            // ボタン
+            for (int i = 0; i < buttons.Count; i++){
+                buttons[i].Font = font;
+            }
+            // テキストボックス
+            for (int i = 0; i < textboxes.Count; i++){
+                textboxes[i].Font = font;
+                textboxes[i].Width = (int)(textBoxWidth[i] * factor);
             }
         }
     }
