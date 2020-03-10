@@ -191,6 +191,7 @@ namespace WinMangoCAT
                     isOpen = false;
                     buttonConnect.Text = "接続";
                     textLocalAddress.ReadOnly = false;
+                    textRemoteAddress.ReadOnly = false;
                     remoteOn = false;
                     labelCtrlState.Text = "リモートOFF";
                     isConnected = false;
@@ -212,6 +213,7 @@ namespace WinMangoCAT
                     isOpen = true;
                     buttonConnect.Text = "切断";
                     textLocalAddress.ReadOnly = true;
+                    textRemoteAddress.ReadOnly = true;
                 }
             }
         }
