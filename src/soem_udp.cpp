@@ -1,7 +1,3 @@
-#include "sample_select.h"
-
-#if (SAMPLE_PROGRAM_NO == 102)
-
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
@@ -19,7 +15,8 @@ uint8_t  g_servo[4];    // サーボ目標角度     (MANGO→PC)
 uint16_t g_volume[4];   // ボリューム入力値   (MANGO→PC)
 int16_t  g_gamepad[4];  // ゲームパッド入力値 (MANGO←PC)
 bool g_remoteOn = false; // 遠隔操作ONフラグ
-int g_init_cnt = 0; // 初期動作カウンタ
+int g_init_cnt = 0;      // 初期動作カウンタ
+bool g_init_flag = true; // 初期動作フラグ
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
@@ -260,7 +257,8 @@ void robot_arm_ctrl(void)
 		servo[i] = I_DEG[i];
 	}
 
-	g_init_cnt = 0; // 初期動作カウンタ
+	g_init_cnt = 0;     // 初期動作カウンタ
+    g_init_flag = true; // 初期動作フラグ
 	while (1)
 	{
 		// 時間確認用
@@ -275,12 +273,13 @@ void robot_arm_ctrl(void)
 		soem_transferPDO();
 
 		// 初期動作(ゆっくり目標角度へ)
-		bool init_flag = false;
+        g_mutex.lock();
 		if(g_init_cnt < 180){
 			g_init_cnt++;
-			init_flag = true;
+            if(g_init_cnt >= 180) g_init_flag = false;
 			wait_ms(10);
 		}
+        g_mutex.unlock();
 		// 各々のサーボについて
 		for(int i=0;i<4;i++){
 			// ボリューム値を目標角度へ換算
@@ -303,9 +302,8 @@ void robot_arm_ctrl(void)
 			    deg = map(vol, 0, 1023, L_DEG[i], H_DEG[i]);
 			    fServo[i] = (float)deg;
             }
-            g_mutex.unlock();
 			// 初期動作(ゆっくり目標角度へ)
-			if(init_flag){
+			if(g_init_flag){
 				if     (servo[i] < deg) servo[i]++;
 				else if(servo[i] > deg) servo[i]--;
 			}
@@ -313,6 +311,7 @@ void robot_arm_ctrl(void)
 			else{
 				servo[i] = deg;
 			}
+            g_mutex.unlock();
 			printf("%d ", servo[i]);
 			printf(",");
 		}
@@ -476,11 +475,13 @@ void udpRecvFunc()
                             if(remoteOn == 0){
                                 g_remoteOn = false;
                                 g_init_cnt = 0;
+                                g_init_flag = true;
                                 //printf("R: OFF!\n");
                             }else if(remoteOn == 1)
                             {
                                 g_remoteOn = true;
                                 //g_init_cnt = 0;
+                                //g_init_flag = true;
                                 //printf("R: ON!\n");
                             }else{
                                 printf("R: Bad Parameter %02X\n", remoteOn);
@@ -545,5 +546,3 @@ int main()
         //wait(1);
     }
 }
-
-#endif //  (SAMPLE_PROGRAM_NO == 102)
