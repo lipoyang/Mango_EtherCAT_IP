@@ -2,13 +2,17 @@
 
 GR-MANGO(ベータ版)の2個のLANポートを活用して、片方でEtherCATマスター、もう片方でUDP/IP通信をするデモ。
 
-<!-- 動画 -->
-<!-- 全体構成図 -->
+## 概要
+![全体図](overview.png)
 
-GR-MANGO(RZ/A2Mマイコン)のEthernetポートのCH0でUDP/IP、CH1でEtherCATマスターの通信をおこないます。Ethernetドライバ(r_ether_rza2.c)とMbedのRZ_A2_EMACクラス(rza2_emac.cpp)のコールバックに関する処理の都合で、Ethernetドライバを少しハックしました。
+GR-MANGO(RZ/A2Mマイコン)のEthernetポートのCH0でUDP/IP、CH1でEtherCATマスターの通信をおこないます。
+
+Ethernetドライバ(r_ether_rza2.c)とMbedのRZ_A2_EMACクラス(rza2_emac.cpp)のコールバックに関する処理の都合で、Ethernetドライバを少しハックしました。
+
+<!-- 動画 -->
 
 ## EtherCATによるロボットアーム制御
-このプロジェクトは下記のプロジェクトをベースにしています。EtherCATに関してはこちらを参照してください。
+このプロジェクトは下記のプロジェクトをベースにしています。EtherCATとロボットアーム制御に関してはこちらを参照してください。
 
 - [ArduinoでEtherCATのデモ](https://github.com/lipoyang/Arduino_de_EtherCAT)
 
