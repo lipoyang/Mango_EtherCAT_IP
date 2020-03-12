@@ -307,7 +307,7 @@ char* ecx_elist2string(ecx_contextt *context)
 #if 0
       sprintf(timestr, "Time:%12.3f", Ec.Time.sec + (Ec.Time.usec / 1000000.0) );
 #else
-      sprintf(timestr, "Time:%10lu", Ec.Time );
+      sprintf(timestr, "Time:%10u", Ec.Time );
 #endif
       switch (Ec.Etype)
       {

@@ -70,13 +70,14 @@ static int32_t my_callback_ether_regist(void)
 
 // (1) open
 // return: 0=SUCCESS
-int  hal_ethernet_open(void)
+int  hal_ethernet_open(int init_skip)
 {
     ether_param_t   param;
     ether_return_t eth_ret;
     
-    //R_ETHER_PinSet_ETHERC0_RMII();
-    //R_ETHER_Initial(); // skip
+    if(init_skip == 0){
+        R_ETHER_Initial();
+    }
     //my_callback_ether_regist();
     int result = R_ETHER_Open_ZC2(ETHER_CH, myethaddr, ETHER_FLAG_OFF);
     param.channel = ETHER_CH;

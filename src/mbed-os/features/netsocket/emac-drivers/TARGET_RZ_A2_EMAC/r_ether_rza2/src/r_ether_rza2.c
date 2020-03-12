@@ -62,8 +62,10 @@ static void ether_pause_resolution (uint16_t local_ability, uint16_t partner_abi
 static void ether_configure_mac (uint32_t channel, const uint8_t mac_addr[], const uint8_t mode);
 static ether_return_t ether_do_link (uint32_t channel, const uint8_t mode);
 static ether_return_t ether_set_callback (ether_param_t const control);
+static ether_return_t ether_set_callback_ex (ether_param_t const control);
 static ether_return_t ether_set_promiscuous_mode (ether_param_t const control);
 static ether_return_t ether_set_int_handler (ether_param_t const control);
+static ether_return_t ether_set_int_handler_ex (ether_param_t const control);
 static ether_return_t ether_power_on (ether_param_t const control);
 static ether_return_t ether_power_off (ether_param_t const control);
 static ether_return_t power_on (uint32_t channel);
@@ -92,7 +94,7 @@ static descriptor_t * papp_rx_desc[ETHER_CHANNEL_MAX];
 static descriptor_t * papp_tx_desc[ETHER_CHANNEL_MAX];
 
 /* Pointer to the callback function */
-static ether_cb_t cb_func;
+static ether_cb_t cb_func[ETHER_CHANNEL_MAX];
 
 /*
  * The flag which control the pause frame.
@@ -264,11 +266,13 @@ void R_ETHER_Initial (void)
 
     memset(etherc_edmac_power_cont, 0x00, sizeof(etherc_edmac_power_cont));
 
-    /* Initialize the callback function pointer */
-    cb_func.pcb_func = NULL;
+    for(i = 0; i < ETHER_CHANNEL_MAX; i++){
+        /* Initialize the callback function pointer */
+        cb_func[i].pcb_func = NULL;
 
-    /* Initialize the interrupt handler pointer */
-    cb_func.pcb_int_hnd = NULL;
+        /* Initialize the interrupt handler pointer */
+        cb_func[i].pcb_int_hnd = NULL;
+    }
 
     /* Initialize */
     for (i = 0; i < ETHER_CHANNEL_MAX; i++) {
@@ -861,10 +865,10 @@ void R_ETHER_LinkProcess (uint32_t channel)
     if (ETHER_FLAG_ON == mpd_flag[channel]) {
         mpd_flag[channel] = ETHER_FLAG_OFF;
 
-        if (NULL != cb_func.pcb_func) {
+        if (NULL != cb_func[channel].pcb_func) {
             cb_arg.channel = channel;
             cb_arg.event_id = ETHER_CB_EVENT_ID_WAKEON_LAN;
-            (*cb_func.pcb_func)((void *) &cb_arg);
+            (*cb_func[channel].pcb_func)((void *) &cb_arg);
         }
 
         /*
@@ -924,10 +928,10 @@ void R_ETHER_LinkProcess (uint32_t channel)
             ether_configure_mac(channel, mac_addr_buf[channel], NO_USE_MAGIC_PACKET_DETECT);
             ret = ether_do_link(channel, NO_USE_MAGIC_PACKET_DETECT);
             if (ETHER_SUCCESS == ret) {
-                if (NULL != cb_func.pcb_func) {
+                if (NULL != cb_func[channel].pcb_func) {
                     cb_arg.channel = channel;
                     cb_arg.event_id = ETHER_CB_EVENT_ID_LINK_ON;
-                    (*cb_func.pcb_func)((void *) &cb_arg);
+                    (*cb_func[channel].pcb_func)((void *) &cb_arg);
                 }
             } else {
                 /* When PHY auto-negotiation is not completed */
@@ -961,10 +965,10 @@ void R_ETHER_LinkProcess (uint32_t channel)
         ether_configure_mac(channel, mac_addr_buf[channel], NO_USE_MAGIC_PACKET_DETECT);
         ret = ether_do_link(channel, NO_USE_MAGIC_PACKET_DETECT);
         if (ETHER_SUCCESS == ret) {
-            if (NULL != cb_func.pcb_func) {
+            if (NULL != cb_func[channel].pcb_func) {
                 cb_arg.channel = channel;
                 cb_arg.event_id = ETHER_CB_EVENT_ID_LINK_ON;
-                (*cb_func.pcb_func)((void *) &cb_arg);
+                (*cb_func[channel].pcb_func)((void *) &cb_arg);
             }
         } else {
             /* When PHY auto-negotiation is not completed */
@@ -994,10 +998,10 @@ void R_ETHER_LinkProcess (uint32_t channel)
 
             transfer_enable_flag[channel] = ETHER_FLAG_OFF;
 
-            if (NULL != cb_func.pcb_func) {
+            if (NULL != cb_func[channel].pcb_func) {
                 cb_arg.channel = channel;
                 cb_arg.event_id = ETHER_CB_EVENT_ID_LINK_OFF;
-                (*cb_func.pcb_func)((void *) &cb_arg);
+                (*cb_func[channel].pcb_func)((void *) &cb_arg);
             }
         }
 #elif (ETHER_CFG_USE_LINKSTA == 0)
@@ -1009,10 +1013,10 @@ void R_ETHER_LinkProcess (uint32_t channel)
 
         transfer_enable_flag[channel] = ETHER_FLAG_OFF;
 
-        if (NULL != cb_func.pcb_func) {
+        if (NULL != cb_func[channel].pcb_func) {
             cb_arg.channel = channel;
             cb_arg.event_id = ETHER_CB_EVENT_ID_LINK_OFF;
-            (*cb_func.pcb_func)((void *) &cb_arg);
+            (*cb_func[channel].pcb_func)((void *) &cb_arg);
         }
 #endif
     } else {
@@ -1306,6 +1310,14 @@ ether_return_t R_ETHER_Control (ether_cmd_t const cmd, ether_param_t const contr
 
         case CONTROL_BROADCASTFRAME_FILTER :
             ret = ether_set_broadcastframe_filter(control);
+        break;
+        
+        case CONTROL_SET_CALLBACK_EX :
+            ret = ether_set_callback_ex(control);
+        break;
+
+        case CONTROL_SET_INT_HANDLER_EX :
+            ret = ether_set_int_handler_ex(control);
         break;
 
             /* Commands not supported */
@@ -1786,11 +1798,25 @@ static ether_return_t ether_set_callback (ether_param_t const control)
 
     /* Check callback function pointer */
     if (NULL != pcb_func) {
-        cb_func.pcb_func = pcb_func; /* Set the callback function */
+        cb_func[ETHER_CHANNEL_0].pcb_func = pcb_func; /* Set the callback function */
     }
 
     return ETHER_SUCCESS;
 } /* End of function ether_set_callback() */
+
+static ether_return_t ether_set_callback_ex (ether_param_t const control)
+{
+    void (*pcb_func) (void *);
+
+    pcb_func = control.ether_callback.pcb_func;
+
+    /* Check callback function pointer */
+    if (NULL != pcb_func) {
+        cb_func[ETHER_CHANNEL_1].pcb_func = pcb_func; /* Set the callback function */
+    }
+
+    return ETHER_SUCCESS;
+} /* End of function ether_set_callback_ex() */
 
 /***********************************************************************************************************************
  * Function Name: ether_set_promiscuous_mode
@@ -1839,11 +1865,24 @@ static ether_return_t ether_set_int_handler (ether_param_t const control)
 
     pcb_int_hnd = control.ether_int_hnd.pcb_int_hnd;
     if (NULL != pcb_int_hnd) {
-        cb_func.pcb_int_hnd = pcb_int_hnd;
+        cb_func[ETHER_CHANNEL_0].pcb_int_hnd = pcb_int_hnd;
         ret = ETHER_SUCCESS;
     }
     return ret;
 } /* End of function ether_set_int_handler() */
+
+static ether_return_t ether_set_int_handler_ex (ether_param_t const control)
+{
+    void (*pcb_int_hnd) (void *);
+    ether_return_t ret = ETHER_ERR_INVALID_ARG;
+
+    pcb_int_hnd = control.ether_int_hnd.pcb_int_hnd;
+    if (NULL != pcb_int_hnd) {
+        cb_func[ETHER_CHANNEL_1].pcb_int_hnd = pcb_int_hnd;
+        ret = ETHER_SUCCESS;
+    }
+    return ret;
+} /* End of function ether_set_int_handler_ex() */
 
 /***********************************************************************************************************************
  * Function Name: ether_power_on
@@ -2249,11 +2288,11 @@ static void ether_int_common (uint32_t channel)
     status_eesr = pedmac_adr->EESR.LONG;
 
     /* Callback : Interrupt handler */
-    if (NULL != cb_func.pcb_int_hnd) {
+    if (NULL != cb_func[channel].pcb_int_hnd) {
         cb_arg.channel = channel;
         cb_arg.status_ecsr = status_ecsr;
         cb_arg.status_eesr = status_eesr;
-        (*cb_func.pcb_int_hnd)((void *) &cb_arg);
+        (*cb_func[channel].pcb_int_hnd)((void *) &cb_arg);
     }
 
     /* When the ETHERC status interrupt is generated */

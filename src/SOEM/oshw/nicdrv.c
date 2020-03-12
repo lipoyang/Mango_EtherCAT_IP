@@ -36,7 +36,7 @@
 #include "nicdrv.h"
 #include "../osal/osal.h"
 
-int  hal_ethernet_open(void);
+int  hal_ethernet_open(int init_skip);
 void hal_ethernet_close(void);
 int  hal_ethernet_send(unsigned char *data, int len);
 int  hal_ethernet_recv(unsigned char **data);
@@ -161,7 +161,13 @@ int ecx_setupnic(ecx_portt *port, const char *ifname, int secondary)
    }
    
    // open (=> SOEM.cpp)
-   int result = hal_ethernet_open();
+   int init_skip;
+   if(memcmp(ifname, "init_skip", 9) == 0){
+      init_skip == 1;
+   }else{
+      init_skip == 0;
+   }
+   int result = hal_ethernet_open(init_skip);
    
    if (result != 0)
    {

@@ -216,7 +216,7 @@ void soem_setOutPDO(int slave, int offset, uint8_t value)
 // ロボットアーム制御
 void robot_arm_ctrl(void)
 {
-	char ifname[] = "EthernetShield2"; // It's dummy
+	char ifname[] = "init_skip"; // to skip initializing Ethernet driver
 	
 	int result = soem_open(ifname);
 	if(result == 0)

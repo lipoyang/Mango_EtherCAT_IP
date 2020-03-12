@@ -112,7 +112,9 @@ typedef enum
     CONTROL_POWER_ON,             /* Cancel ETHERC/EDMAC module stop */
     CONTROL_POWER_OFF,            /* Transition to ETHERC/EDMAC module stop */
     CONTROL_MULTICASTFRAME_FILTER,/* Multicast frame filter setting*/
-    CONTROL_BROADCASTFRAME_FILTER /* Broadcast frame filter setting*/
+    CONTROL_BROADCASTFRAME_FILTER,/* Broadcast frame filter setting*/
+    CONTROL_SET_CALLBACK_EX,      /* Callback function registration */
+    CONTROL_SET_INT_HANDLER_EX    /* Interrupt handler function registration */
 } ether_cmd_t;
 
 typedef enum
