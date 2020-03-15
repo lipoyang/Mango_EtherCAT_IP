@@ -1,4 +1,4 @@
-# GR-MANGO(ベータ版)でEtherCATマスター/IPv4ブリッジ
+# GR-MANGO(ベータ版)でEtherCAT-IPゲートウェイ
 
 GR-MANGO(ベータ版)の2個のLANポートを活用して、片方でEtherCATマスター、もう片方でUDP/IP通信をするデモ。
 
