@@ -20,7 +20,7 @@ GR-MANGO(RZ/A2Mマイコン)のEthernetポートのCH0でUDP/IP、CH1でEtherCAT
 Ethernetドライバ(r_ether_rza2.c)とMbedのRZ_A2_EMACクラス(rza2_emac.cpp)のコールバックに関する処理の都合で、Ethernetドライバを少しハックしました。これをしないとEthernetのコールバックがCH0のものもCH1のものも全てRZ_A2_EMACクラスに持っていかれてしまいます。
 
 ## ファイル構成
-- `WinMangoCAT/` : Windows用モニタ/コントロールアプリ
+- `RobotArmMonitor/` : Windows用モニタ/コントロールアプリ
 - `src/` : GR-MANGOソフトウェアのソース (Mbedベース)
 	- `main.cpp` : メイン関数
 	- `ethercat.cpp` : EtherCAT通信処理とロボットアーム制御
