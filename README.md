@@ -7,6 +7,8 @@ GR-MANGO(ベータ版)の2個のLANポートを活用して、片方でEtherCAT�
 
 GR-MANGO(RZ/A2Mマイコン)のEthernetポートのCH0でUDP/IP、CH1でEtherCATマスターの通信をおこないます。
 
+![全体図](overview2.png)
+
 ## 動画
 [![](https://img.youtube.com/vi/0t5lHCy8NLg/0.jpg)](https://www.youtube.com/watch?v=0t5lHCy8NLg)
 
